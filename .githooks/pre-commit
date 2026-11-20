@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+set -eu
+
+echo "[pre-commit] Running syntax check and Vitest suite..."
+node --check src/game-engine.js src/headless-cli.js src/main.js src/render-bench-cli.js src/demo-video-cli.js
+npm test

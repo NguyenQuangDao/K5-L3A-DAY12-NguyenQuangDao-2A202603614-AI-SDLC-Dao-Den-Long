@@ -1,9 +1,29 @@
-requirement,verification,command,result,evidence
-3D island and player,unit + browser smoke,npm test; npm run dev,PASS,dist + browser validation pending
-Fixed 60 tick headless,headless scenario,npm run headless -- --seed 123 --night 1 --ticks 3600 --out docs/proof/determinism-a.jsonl,PASS,docs/proof/determinism-a.jsonl
-Mote pickup,Vitest, npm test,PASS,tests/game-engine.test.js
-Lantern deposit and lit state,Vitest,npm test,PASS,tests/game-engine.test.js
-Shade chase/pulse,Vitest,npm test,PASS,tests/game-engine.test.js
-Win/loss,Vitest,npm test,PASS,tests/game-engine.test.js
-Strict input ticks,Vitest,npm test,PASS,tests/game-engine.test.js
-Determinism,two identical headless runs,cmp,PASS,docs/proof/determinism-a.jsonl and determinism-b.jsonl
+"Yêu cầu","Phương pháp kiểm chứng","Lệnh hoặc kịch bản","Kết quả","Bằng chứng"
+"Khởi chạy game 3D","Playwright browser smoke test","node scripts/verify-ui-proof.mjs","ĐẠT","docs/proof/gameplay.png"
+"Mô phỏng headless 60 tick/giây","Scenario headless và kiểm tra snapshot","npm run headless -- --seed 123 --night 1 --ticks 3600 --out docs/proof/determinism-a.jsonl","ĐẠT","docs/proof/determinism-a.jsonl"
+"Nhặt đom đóm","Vitest và scenario","npm test","ĐẠT","tests/game-engine.test.js; docs/proof/test-output.txt"
+"Nạp và thắp đèn","Vitest và scenario","npm test","ĐẠT","tests/game-engine.test.js; docs/proof/test-output.txt"
+"Bóng Mực di chuyển ngay từ tick đầu","Vitest cả ba đêm và snapshot headless tick 0/1","phase2-starting-shades.jsonl","ĐẠT","docs/proof/phase2-starting-shades.jsonl"
+"Lướt (14 m/s trong 0,2s = 12 tick) & hồi chiêu","Vitest và scenario headless","phase2-dash.json cùng inputs; tests/game-engine.test.js","ĐẠT","docs/proof/phase2-dash.jsonl; docs/proof/test-output.txt"
+"Nhảy","Vitest và scenario headless","phase2-jump.json cùng inputs","ĐẠT","docs/proof/phase2-jump.jsonl"
+"Bùa Gió cho phép lướt khi hồi chiêu","Vitest và scenario headless","phase2-charm-dash.json cùng inputs","ĐẠT","docs/proof/phase2-charm-dash.jsonl"
+"Bục nhảy Đêm 2","Scenario headless và Vitest, kiểm tra vận tốc phóng","phase2-jump-pad.json","ĐẠT (theo giả định)","docs/proof/phase2-jump-pad.jsonl; docs/ticket-02-self-authored.md"
+"Bóng Mực Gió Lạc bắt đầu đuổi và trộm đom đóm","Vitest và scenario headless","phase2-drifter-chase.json","ĐẠT","docs/proof/phase2-drifter-chase.jsonl"
+"Bóng Mực Gió Lạc chạy trốn và đánh rơi đom đóm sau Tỏa Sáng","Vitest và scenario 301 tick","phase2-drifter-pulse.json cùng inputs","ĐẠT","docs/proof/phase2-drifter-pulse.jsonl"
+"Lịch sinh đom đóm & đom đóm khởi đầu cả 3 Đêm","Vitest và scenario headless 500 tick","phase2-mote-spawn.json","ĐẠT (theo giả định)","docs/proof/phase2-mote-spawn.jsonl; docs/ticket-02-self-authored.md"
+"Lịch gió Đêm 3 xác định theo seed và lực đẩy 3 m/s","Vitest và scenario 2.101 tick","phase2-wind-schedule.json","ĐẠT (theo giả định)","docs/proof/phase2-wind-schedule.jsonl; docs/ticket-02-self-authored.md"
+"Tọa độ, số lượng và lịch sinh bản đồ","Đối chiếu Ticket-02 tự giả định","docs/ticket-02-self-authored.md","ĐẠT (theo giả định)","Ticket-02 gốc không có trong repo; đã chốt rõ giả định tại docs/ticket-02-self-authored.md"
+"Thắng bình minh và ưu tiên hết Ngọn Lửa","Vitest và scenario headless","phase3-dawn-win.jsonl cùng tests/game-engine.test.js","ĐẠT","docs/proof/phase3-dawn-win.jsonl"
+"Hao dầu, đèn tắt, thắp lại (5 đom đóm, +40), châm dầu, sức chứa","Vitest tập trung","npm test","ĐẠT","tests/game-engine.test.js; docs/proof/test-output.txt"
+"Chi phí và lực đẩy Tỏa Sáng","Vitest và scenario headless","phase3-pulse.json cùng inputs","ĐẠT","docs/proof/phase3-pulse.jsonl"
+"Va chạm làm mất tối đa một Ngọn Lửa và rơi đúng số đom đóm","Vitest và scenario headless","phase3-hit-drop.json","ĐẠT","docs/proof/phase3-hit-drop.jsonl"
+"Rơi khỏi đảo và hồi sinh","Vitest và scenario headless","phase3-fall-drop.json","ĐẠT","docs/proof/phase3-fall-drop.jsonl"
+"Tạm dừng giữ nguyên thời gian mô phỏng và hồi chiêu","Vitest và scenario headless","phase3-pause.json cùng inputs","ĐẠT","docs/proof/phase3-pause.jsonl"
+"Benchmark render 1280×720 Phase 4","Chạy benchmark WebGL Three.js 30 giây (200 Bóng Mực, 100 đom đóm, 3 đèn)","npm run bench -- --seed 42 --duration 30 --out bench.json","ĐẠT","bench.json; docs/proof/bench-30s.json"
+"Soak 10 đêm","Chạy soak và kiểm tra heap sau GC","npm run soak -- --seed 7 --nights 10 --out soak.json","ĐẠT","soak.json; docs/proof/soak-10-nights.json"
+"Bảng xếp hạng top 10 và tải JSON từ giao diện","Vitest + Playwright browser test + CLI export","node scripts/verify-ui-proof.mjs; npm test","ĐẠT","docs/proof/leaderboard-ui.png; docs/proof/leaderboard-browser-export.json"
+"Đổi phím, đặt lại, cỡ chữ ×1,25, giảm chuyển động, chế độ mù màu","Playwright browser test + chụp ảnh kiểm chứng","node scripts/verify-ui-proof.mjs","ĐẠT","docs/proof/a11y-colorblind.png"
+"Tính tất định","Hai lượt chạy cùng seed và input, so sánh từng byte","npm run verify","ĐẠT","docs/proof/determinism-a.jsonl; docs/proof/determinism-b.jsonl"
+"Cổng kiểm chứng một lệnh, Harness Skill/Hook & CI","Chạy npm run verify + kiểm tra cấu hình CI/hook","npm run verify","ĐẠT","scripts/verify-all.mjs; .agents/skills/verify-game/SKILL.md; .githooks/pre-commit; .github/workflows/ci.yml"
+"Tag phase-1…phase-4 và GitHub Release v1.0.0","Kiểm tra metadata GitHub","git tag --list; gh release view v1.0.0","ĐẠT","Tags phase-1..phase-4 và GitHub Release v1.0.0"
+"Video demo dưới 5 phút","Quay trực tiếp gameplay + bằng chứng kiểm chứng","npm run demo:record","ĐẠT","docs/demo/demo.mp4 và đính kèm Release v1.0.0"

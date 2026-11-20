@@ -1,8 +1,10 @@
 # Day 12 — AI SDLC: Đảo Đèn Lồng
 
+> **Video demo (< 5 phút, xem công khai):** [docs/demo/demo.mp4](./docs/demo/demo.mp4) · **Bản phát hành (Release v1.0.0):** [GitHub Release v1.0.0](https://github.com/NguyenQuangDao/K5-L3-LAB-Day12-2A202603614-NguyenQuangDao-AI-SDLC/releases/tag/v1.0.0)
+
 ## Sản phẩm
 
-Game 3D góc nhìn thứ ba, xây bằng Three.js và TypeScript/JavaScript. Người chơi điều khiển Mây, nhặt đom đóm, nạp đèn, né Bóng Mực và thắp đủ 5 Đèn Lồng Lớn.
+Game 3D góc nhìn thứ ba, xây bằng Three.js và JavaScript. Người chơi điều khiển Mây, nhặt đom đóm, nạp đèn, né Bóng Mực và sống sót tới bình minh với đủ số đèn sáng (3/5, 4/6, 5/7).
 
 ### Chạy trong tối đa 3 lệnh
 
@@ -11,7 +13,13 @@ npm install
 npm run dev
 ```
 
-Kiểm tra và build:
+Kiểm tra toàn bộ bằng một lệnh (cú pháp, 49 unit test, build, tính tất định, các scenario Phase 2–3, mã thoát 2 với scenario lỗi, soak test 10 đêm):
+
+```bash
+npm run verify
+```
+
+Hoặc chạy riêng test và build:
 
 ```bash
 npm test
@@ -22,10 +30,15 @@ npm run build
 
 | Nút | Hành động |
 |---|---|
-| WASD | Di chuyển |
+| WASD | Di chuyển (có thể đổi trong Hỗ trợ tiếp cận) |
 | Chuột kéo | Quay camera |
 | E | Nạp đom đóm vào đèn gần Mây |
 | F | Tỏa sáng, làm choáng và đẩy Bóng Mực |
+| Space | Nhảy |
+| Shift | Lướt (dash) |
+| Escape / P | Tạm dừng |
+| Nút Hỗ trợ tiếp cận | Đổi phím, giảm chuyển động, cỡ chữ, chỉ báo hình ảnh, chế độ mù màu |
+| Nút Bảng xếp hạng | Xem top 10 và tải dữ liệu JSON |
 | Nút Chơi lại | Tái bắt đầu sau thắng/thua |
 
 ### Chế độ headless
@@ -36,17 +49,60 @@ npm run headless -- --seed 123 --night 1 --ticks 3600 --out out.jsonl --snapshot
 
 Hỗ trợ `--scenario <file.json>` và `--inputs <file.json>`. Contract đầy đủ tại `game.contract.json`.
 
+### Benchmark render (Phase 4)
+
+```bash
+npx playwright install chromium
+npm run bench -- --seed 42 --duration 30 --out bench.json
+```
+
+Mở Chromium headless ở 1280×720, dựng cảnh Three.js gồm 200 Bóng Mực, 100 đom đóm và 3 đèn sáng. Khởi động 3 giây, sau đó đo thời lượng yêu cầu và lưu FPS trung bình, 1% thấp, p95 frame, thời gian tải và cấu hình vào `bench.json`. Lệnh thoát mã khác 0 nếu thiếu cấu hình cảnh hoặc không đạt ngưỡng.
+
+Benchmark engine cũ (không render) vẫn có thể chạy riêng bằng `npm run bench:engine -- --seed 42 --duration 30 --out docs/proof/bench-engine.json`; không dùng kết quả này để chứng minh FPS giao diện.
+
+### Chế độ soak test (Phase 4)
+
+```bash
+npm run soak -- --seed 7 --nights 10 --out soak.json
+```
+
+Chạy 10 Đêm liên tiếp, kiểm tra crash và rò rỉ bộ nhớ.
+
+### Bảng xếp hạng (Phase 4)
+
+Sau khi thắng hoặc thua, nhập tên để lưu điểm. Bảng xếp hạng top 10 được lưu trên localStorage.
+Có màn hình Bảng xếp hạng từ màn hình kết thúc.
+Lệnh export JSON (đọc file JSON do người dùng cung cấp):
+
+```bash
+npm run headless -- --export-leaderboard --leaderboard leaderboard.json --out leaderboard-export.json
+```
+
 ### Cách tính điểm
 
-- 10 điểm cho mỗi đom đóm nhặt được.
-- 500 điểm cho mỗi đèn thắp.
-- 20 điểm cho mỗi lần làm choáng Bóng Mực.
-- 1 điểm cho mỗi giây còn lại.
-- 100 điểm cho mỗi flame còn lại khi thắng.
+- 5 điểm cho mỗi đom đóm nạp; 100 điểm thắp lần đầu; 40 điểm thắp lại.
+- Tỏa Sáng: 5 điểm mỗi Bóng Mực, hoặc 15 điểm nếu đang hút dầu.
+- Thắng bình minh: mỗi đèn sáng +50 và phần dầu nguyên (floor); mỗi Ngọn Lửa còn lại +50. Không còn thưởng thời gian.
+
+### Tình trạng Phase 4
+
+- Bảng điểm top 10 lưu trong `localStorage`, có màn hình riêng và tải JSON thật từ trình duyệt: [leaderboard-ui.png](./docs/proof/leaderboard-ui.png) · [leaderboard-browser-export.json](./docs/proof/leaderboard-browser-export.json).
+- Hỗ trợ tiếp cận có đổi phím với báo trùng/khôi phục mặc định, giảm chuyển động, cỡ chữ ×1,25, chỉ báo hình ảnh và chế độ mù màu: [a11y-colorblind.png](./docs/proof/a11y-colorblind.png).
+- Bóng Mực khởi đầu đã dịch chuyển ngay từ tick gameplay đầu tiên; có test kiểm tra cả ba Đêm.
+- Ticket-02 gốc không có trong repository. Các tọa độ/lịch sinh được chốt trong [Ticket-02 tự giả định](./docs/ticket-02-self-authored.md); lực gió 3 m/s và thông số bục cũng là giả định rõ ràng.
+- Benchmark CLI dựng cảnh Three.js thật ở 1280×720 (200 Bóng Mực, 100 đom đóm, 3 đèn sáng); số đo thật ở [bench.json](./bench.json) và [docs/proof/bench-30s.json](./docs/proof/bench-30s.json).
+- Harness AI gồm `AGENTS.md`, skill [verify-game](./.agents/skills/verify-game/SKILL.md), hook [.githooks/pre-commit](./.githooks/pre-commit), cổng kiểm chứng một lệnh `npm run verify` ([scripts/verify-all.mjs](./scripts/verify-all.mjs)) và CI [.github/workflows/ci.yml](./.github/workflows/ci.yml).
+- Video demo dưới 5 phút lưu tại [docs/demo/demo.mp4](./docs/demo/demo.mp4) và đính kèm Release `v1.0.0`; đủ tag `phase-1`…`phase-4`.
 
 ### Sáng tạo của tôi
 
-Đèn sáng lan ánh cam ấm và đảo phát sáng dần theo số đèn đã thắp. Sáng tạo này không thay đổi đầu ra headless và chỉ là hiệu ứng renderer.
+Đèn sáng lan ánh cam ấm và đảo phát sáng dần theo số đèn đã thắp ([gameplay.png](./docs/proof/gameplay.png)). Sáng tạo này chỉ là hiệu ứng renderer; bằng chứng replay headless cùng seed cho đầu ra giống hệt từng byte: [determinism-a.jsonl](./docs/proof/determinism-a.jsonl) và [determinism-b.jsonl](./docs/proof/determinism-b.jsonl).
+
+### Kiểm chứng và báo cáo tổng kết
+
+- [Traceability](./docs/proof/traceability.csv) ghi trạng thái đạt/chưa đạt thay vì đánh dấu giả.
+- [Đặc tả và tiêu chí nghiệm thu Phase 2](./docs/spec-phase2.md) ghi rõ bằng chứng hiện có và các mục cần Ticket-02 để đối chiếu.
+- [Phase 1 retro](./docs/retro-phase-1.md) · [Phase 2 retro](./docs/retro-phase-2.md) · [Phase 3 retro](./docs/retro-phase-3.md) · [Phase 4 retro](./docs/retro-phase-4.md)
 
 > **Cá nhân** (1 người / 1 MSSV) · Áp dụng SDLC cùng AI để xây một **game 3D** qua **4 phase**, từ yêu cầu ban đầu tới bản phát hành.
 > **Lab board + trợ giảng:** **[Đảo Đèn Lồng Lab](https://claude.ai/artifact/Q1RYyv1dxjUczzCbd2ZnoW)**

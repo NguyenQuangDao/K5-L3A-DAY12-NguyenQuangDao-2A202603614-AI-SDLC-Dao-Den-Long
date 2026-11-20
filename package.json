@@ -7,12 +7,18 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "test": "vitest run",
-    "headless": "node src/headless-cli.js"
+    "verify": "node scripts/verify-all.mjs",
+    "headless": "node src/headless-cli.js",
+    "bench": "node src/render-bench-cli.js",
+    "bench:engine": "node src/headless-cli.js --bench",
+    "demo:record": "node src/demo-video-cli.js",
+    "soak": "node --expose-gc src/headless-cli.js --soak"
   },
   "dependencies": {
     "three": "^0.180.0"
   },
   "devDependencies": {
+    "playwright": "^1.65.1",
     "vite": "^7.1.12",
     "vitest": "^3.2.4"
   }

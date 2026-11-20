@@ -3,33 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
     <title>Đảo Đèn Lồng</title>
   </head>
   <body>
     <canvas id="game"></canvas>
+    <canvas id="minimap"></canvas>
     <div id="hud">
       <div id="brand">Đảo Đèn Lồng</div>
       <div class="stat"><span>Đom đóm</span><strong id="carried">0</strong></div>
       <div class="stat"><span>Ánh sáng</span><strong id="flames">3</strong></div>
       <div class="stat"><span>Đèn</span><strong id="lanterns">0/5</strong></div>
       <div class="stat"><span>Điểm</span><strong id="score">0</strong></div>
-      <div class="stat"><span>Thời gian</span><strong id="time">300</strong></div>
+      <div class="stat"><span>Thời gian</span><strong id="time">240</strong></div>
       <div id="motes"></div>
       <div id="cooldowns">
         <div class="cooldown-icon" id="dash-cd"></div>
         <div class="cooldown-icon" id="pulse-cd"></div>
       </div>
       <div id="lantern-hint"></div>
+      <div id="pointer-hint">Click để khóa chuột</div>
     </div>
+    <nav id="menu-actions" aria-label="Menu trò chơi">
+      <button id="open-accessibility" type="button">Hỗ trợ tiếp cận</button>
+      <button id="open-leaderboard" type="button">Bảng xếp hạng</button>
+    </nav>
+    <div id="event-indicator" role="status" aria-live="polite" hidden></div>
+    <div id="vignette"></div>
     <div id="help">
       <strong>WASD</strong> di chuyển · <strong>Chuột</strong> quay camera ·
-      <strong>Space</strong> nhảy · <strong>E</strong> nạp đèn · <strong>F</strong> tỏa sáng
+      <strong>Space</strong> nhảy · <strong>Shift</strong> lướt · <strong>E</strong> nạp đèn · <strong>F</strong> tỏa sáng
     </div>
     <div id="overlay" hidden>
       <h1 id="overlay-title"></h1>
       <p id="overlay-score"></p>
       <button id="restart">Chơi lại</button>
     </div>
+    <pre id="render-benchmark-result" data-status="running" hidden></pre>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
