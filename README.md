@@ -1,6 +1,6 @@
 # Day 12 — AI SDLC: Đảo Đèn Lồng
 
-> **Video demo (< 5 phút, xem công khai):** [docs/demo/demo.mp4](./docs/demo/demo.mp4) · **Bản phát hành (Release v1.0.0):** [GitHub Release v1.0.0](https://github.com/NguyenQuangDao/K5-L3-LAB-Day12-2A202603614-NguyenQuangDao-AI-SDLC/releases/tag/v1.0.0)
+> **Video demo (< 5 phút, xem công khai):** [docs/demo/demo.mp4](./docs/demo/demo.mp4) · **Bản phát hành (Release v1.0.0):** [GitHub Release v1.0.0](https://github.com/NguyenQuangDao/K5-L3A-DAY12-NguyenQuangDao-2A202603614-AI-SDLC-Dao-Den-Long/releases/tag/v1.0.0)
 
 ## Sản phẩm
 
