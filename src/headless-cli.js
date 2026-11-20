@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { applyScenario, advanceState, createInitialState, makeSnapshot, parseInputs } from "./game-engine.js";
+import { advanceState, applyScenario, createInitialState, makeSnapshot, parseInputs } from "./game-engine.js";
 
 function parseArgs(argv) {
   const args = {};
@@ -30,7 +30,7 @@ try {
   const night = Number(args.night);
   const ticks = Number(args.ticks);
   const snapshotEvery = args["snapshot-every"] === undefined ? 10 : Number(args["snapshot-every"]);
-  if (!Number.isInteger(seed) || !Number.isInteger(night) || night !== 1 ||
+  if (!Number.isInteger(seed) || !Number.isInteger(night) || night < 1 || night > 3 ||
       !Number.isInteger(ticks) || ticks < 0 || !Number.isInteger(snapshotEvery) || snapshotEvery < 1) {
     throw new TypeError("Invalid numeric arguments");
   }
@@ -40,14 +40,24 @@ try {
   else {
     state.randomMotes = false;
     state.randomShades = false;
+    state.randomDrifters = false;
   }
   const inputs = args.inputs ? parseInputs(readJson(path.resolve(args.inputs), "inputs")) : [];
   let frameIndex = 0;
-  let activeInput = { move: [0, 0], cam_yaw_deg: 0, jump: false, interact: false, pulse: false, dash: false };
+  let activeInput = { 
+    move: [0, 0], 
+    cam_yaw_deg: 0, 
+    jump: false, 
+    interact: false, 
+    pulse: false, 
+    dash: false,
+    pause: false
+  };
   let previousPulse = false;
   let previousInteract = false;
   let previousJump = false;
   let previousDash = false;
+  let previousPause = false;
   const lines = [JSON.stringify(makeSnapshot(state))];
 
   for (let tick = 0; tick < ticks && state.state === "playing"; tick += 1) {
@@ -64,12 +74,14 @@ try {
       pulse: Boolean(activeInput.pulse) && !previousPulse,
       interact: Boolean(activeInput.interact) && !previousInteract,
       jump: Boolean(activeInput.jump) && !previousJump,
-      dash: Boolean(activeInput.dash) && !previousDash
+      dash: Boolean(activeInput.dash) && !previousDash,
+      pause: Boolean(activeInput.pause) && !previousPause
     };
     previousPulse = Boolean(activeInput.pulse);
     previousInteract = Boolean(activeInput.interact);
     previousJump = Boolean(activeInput.jump);
     previousDash = Boolean(activeInput.dash);
+    previousPause = Boolean(activeInput.pause);
     const result = advanceState(state, risingInput);
     lines.push(...result.events.map((event) => JSON.stringify(event)));
     if ((tick + 1) % snapshotEvery === 0 || state.state !== "playing") {
