@@ -1,0 +1,14 @@
+{
+  "player": {
+    "pos": [0, 0, 0],
+    "carried": 5
+  },
+  "motes": [],
+  "shades": [
+    { "id": "S1", "pos": [1, 0, 0] },
+    { "id": "S2", "pos": [1, 0, 0] }
+  ],
+  "random_motes": false,
+  "random_shades": false,
+  "random_drifters": false
+}

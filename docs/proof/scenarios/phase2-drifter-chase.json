@@ -1,0 +1,20 @@
+{
+  "player": {
+    "pos": [0, 0, 0],
+    "carried": 5
+  },
+  "motes": [],
+  "shades": [],
+  "drifters": [
+    {
+      "id": "D1",
+      "pos": [1, 0, 0],
+      "state": "idle",
+      "state_ticks_left": 1440,
+      "stolen": []
+    }
+  ],
+  "random_motes": false,
+  "random_shades": false,
+  "random_drifters": false
+}

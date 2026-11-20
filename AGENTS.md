@@ -1,130 +1,150 @@
-# Harness rules
+# Quy tắc harness
 
-- Keep pure gameplay in `src/game-engine.js`; renderers and CLI must not change rules.
-- Every gameplay change needs focused Vitest coverage and a headless scenario.
-- Run `npm test` and at least one win/loss/determinism headless run before finishing.
-- Invalid scenario or inputs must exit 2 with stderr; runtime success exits 0.
-- Keep JSONL fields and event names aligned with `game.contract.json`.
-- Record assumptions, AI mistakes, token estimates, and evidence in `docs/`.
-- Do not edit generated output to make tests pass.
+- Giữ luật gameplay thuần trong `src/game-engine.js`; renderer và CLI không được tự đổi luật.
+- Mỗi thay đổi gameplay cần Vitest tập trung và ít nhất một scenario headless.
+- Trước khi kết thúc, chạy `npm test` và ít nhất một lượt headless thắng/thua/tính tất định.
+- Scenario hoặc inputs sai phải thoát mã 2 và ghi lỗi ra stderr; runtime thành công thoát mã 0.
+- Giữ tên trường JSONL và sự kiện khớp `game.contract.json`.
+- Bóng Mực khởi đầu phải dịch chuyển ở tick mô phỏng đầu tiên; kiểm thử chuyển động mà không đổi vị trí sinh hay tốc độ đã đặc tả.
+- Gió Đêm 3 có tính tất định: mỗi 1.800 tick mô phỏng chọn hướng ngẫu nhiên theo seed và hoạt động 300 tick. Không tự đặt lực gió khi chưa có ticket gốc.
+- Bóng Mực Gió Lạc đang đuổi khi bị Tỏa Sáng phải chuyển sang `flee` và đánh rơi số đom đóm đã trộm sau thời gian chạy trốn đã cấu hình.
+- Giữ hành vi giao diện hỗ trợ tiếp cận trong `src/main.js`; luật mô phỏng vẫn thuộc `src/game-engine.js`.
+- Ghi giả định, lỗi AI, ước tính token và bằng chứng trong `docs/`.
+- Không chỉnh sửa đầu ra sinh tự động chỉ để làm test đạt.
 
-# Phase 2 - Standardized Metrics & Features
+## Thành phần Harness & Khi nào dùng
 
-## Requirements
+- `npm run verify` ([scripts/verify-all.mjs](scripts/verify-all.mjs)): cổng kiểm chứng một lệnh (kiểm tra cú pháp, Vitest, Vite build, tính tất định, các scenario Phase 2–3, mã thoát 2 với scenario lỗi, và soak test 10 đêm). Chạy trước mọi commit/tag/hoàn tất tác vụ.
+- `.agents/skills/verify-game/SKILL.md`: skill hướng dẫn agent quy trình kiểm chứng bắt buộc, ngăn kết thúc khi test đỏ. Kích hoạt mỗi khi sửa `src/`, `game.contract.json` hoặc `docs/proof/`.
+- `.githooks/pre-commit`: hook git chặn commit nếu `node --check` hoặc `npm test` thất bại (kích hoạt bằng `git config core.hooksPath .githooks`).
+- `.github/workflows/ci.yml`: CI tự động chạy `npm run verify` trên mọi push/PR.
 
-- **Contract version**: v1.1
-- **Supported nights**: 1, 2, 3 (300s, 330s, 360s respectively)
-- **Frame rate**: 60 ticks/second
-- **Unit system**: meters, seconds, Y-axis up
+## Contract hiện hành (Phase 3 thay thế các luật xung đột của Phase 2)
 
-## Standardized Metrics
+- Phiên bản contract hiện tại là v1.3. Thời lượng đêm là 240/270/300 giây.
+- Tỏa Sáng tốn 3 đom đóm đang mang (không trừ Ngọn Lửa), bán kính 5 m, hồi chiêu 3 giây.
+- Thắng lúc bình minh nếu số đèn sáng đạt `ceil(0.6 * lantern_count)`; không thắng sớm và không thưởng thời gian.
+- Đèn sáng hao dầu 1/s; Bóng Mực hút dầu 5/s; dầu dưới 30 làm mất vùng an toàn.
+- Mỗi tick mất tối đa một Ngọn Lửa khi bị đánh; làm rơi `floor(carried / 2)` đom đóm trong vành 1,5–2,5 m quanh người chơi.
+- Snapshot tạm dừng phải ghi `state: "paused"`; `sim_tick`, thời gian và hồi chiêu phải đứng yên.
+- Giữ test hồi quy Phase 2 trừ khi yêu cầu sau thay thế rõ ràng.
 
-| Category | Parameter | Value |
-|----------|-----------|-------|
-| Movement | Player speed | 6.0 m/s |
-| Movement | Dash speed | 14.0 m/s |
-| Movement | Dash duration | 0.2 s |
-| Movement | Dash cooldown | 1.5 s |
-| Jump | Velocity | 7.0 m/s |
-| Jump | Gravity | -20 m/s² |
-| Pulse | Cost | 3 motes |
-| Pulse | Radius | 5.0 m |
-| Pulse | Cooldown | 3 s |
-| Lantern | Cost | 10 motes |
-| Pickup | Radius | 1.0 m |
-| Interact | Radius | 2.0 m |
-| Safe zone | Radius | 6.0 m |
-| Shade | Speed | 4.0 m/s (Night 3: 4.5 m/s) |
-| Shade | Hit radius | 1.0 m |
-| Drifters | Speed | 7.0 m/s |
-| Charms | Duration | 600 ticks (10 s) |
-| Charms | Cooldown | 2700 ticks (45 s) |
+## Mốc Phase 2 lịch sử (đã bị thay thế khi xung đột với Phase 3)
 
-## New Features (Phase 2)
+### Yêu cầu
 
-### Mechanics
-- Dash (Space/Shift): 14 m/s for 0.2 s, 1.5 s cooldown
-- Jump: 7.0 m/s upward, gravity -20 m/s²
-- Drifters (D1, D2): Steal motes, flee after pulse
-- Charms (C1, C2): Speed boost 7.2 m/s, no dash cooldown
-- Wind (Night 3): Random direction every 30 s, 5 s duration
-- Jump pads (Night 2): Launch to opposite island
+- **Phiên bản contract:** v1.1.
+- **Đêm hỗ trợ:** 1, 2, 3 (mốc Phase 2: 300/330/360 giây).
+- **Tần số mô phỏng:** 60 tick/giây.
+- **Đơn vị:** mét, giây, trục Y hướng lên.
 
-### Nights
-- **Night 1 - Đảo Bến**: 40 m island, 5 lanterns, 6 shades max
-- **Night 2 - Đảo Cau**: Two 28 m islands + bridge, 6 lanterns, 8 shades max, 2 drifters max
-- **Night 3 - Đảo Chuông**: 45 m island with 3 levels, 7 lanterns, 10 shades max, wind
+### Thông số chuẩn
 
-### Events
-- `dash {}`: Dash activated
-- `charm_picked {charm_id, charm_ticks}`: Charm collected
-- `drifter_steal {drifter_id, amount, carried}`: Drifter stole motes
-- `drifter_drop {drifter_id, amount}`: Drifter dropped motes
-- `night_start {night}`: New night started
-- `paused {}`: Game paused
-- `resumed {}`: Game resumed
-- `player_hit {by, flames, dropped, lost}`: Player hit (added `lost` field)
+| Nhóm | Thông số | Giá trị |
+|---|---|---:|
+| Di chuyển | Tốc độ người chơi | 6,0 m/s |
+| Di chuyển | Tốc độ lướt | 14,0 m/s |
+| Di chuyển | Thời lượng lướt | 0,2 giây |
+| Di chuyển | Hồi chiêu lướt | 1,5 giây |
+| Nhảy | Vận tốc đầu | 7,0 m/s |
+| Nhảy | Trọng lực | -20 m/s² |
+| Tỏa Sáng | Chi phí | 3 đom đóm |
+| Tỏa Sáng | Bán kính | 5,0 m |
+| Tỏa Sáng | Hồi chiêu | 3 giây |
+| Đèn | Chi phí thắp lần đầu | 10 đom đóm |
+| Nhặt | Bán kính | 1,0 m |
+| Tương tác | Bán kính | 2,0 m |
+| Vùng an toàn | Bán kính | 6,0 m |
+| Bóng Mực | Tốc độ | 4,0 m/s (Đêm 3: 4,5 m/s) |
+| Bóng Mực | Bán kính va chạm | 1,0 m |
+| Gió Lạc | Tốc độ | 7,0 m/s |
+| Bùa Gió | Thời lượng | 600 tick (10 giây) |
+| Bùa Gió | Hồi chiêu | 2.700 tick (45 giây) |
 
-## Scoring
+### Tính năng mới (Phase 2)
 
-- +10 per mote deposited
-- +100 per lantern lit
-- +5 per shade stunned
-- +2 × seconds remaining on win
-- +50 × flames remaining on win
+#### Cơ chế
 
-## Test Contract
+- Lướt (Shift): 14 m/s trong 0,2 giây; hồi chiêu 1,5 giây.
+- Nhảy: 7,0 m/s hướng lên; trọng lực -20 m/s².
+- Bóng Mực Gió Lạc (D1, D2): trộm đom đóm, chạy trốn sau khi bị Tỏa Sáng.
+- Bùa Gió (C1, C2): tăng tốc lên 7,2 m/s, bỏ qua hồi chiêu lướt.
+- Gió (Đêm 3): hướng ngẫu nhiên mỗi 30 giây, kéo dài 5 giây. Lực gió cần Ticket-02 để xác minh.
+- Bục nhảy (Đêm 2): phóng sang đảo đối diện.
 
-Run headless tests with: `npm run headless -- --seed <n> --night <1-3> --ticks <max 21600> --out <output.jsonl>`
+#### Các đêm
 
-### Acceptance criteria per Phase 2 feature
+- **Đêm 1 — Đảo Bến:** đảo 40 m, 5 đèn, tối đa 6 Bóng Mực.
+- **Đêm 2 — Đảo Cau:** hai đảo 28 m và cầu nối, 6 đèn, tối đa 8 Bóng Mực, tối đa 2 Gió Lạc.
+- **Đêm 3 — Đảo Chuông:** đảo 45 m có 3 tầng, 7 đèn, tối đa 10 Bóng Mực và có gió.
 
-| Feature | Test scenario | Expected outcome |
-|---------|--------------|------------------|
-| Dash | Dash input, no cooldown | Dash event generated |
-| Dash | Dash input, cooldown active | No dash event |
-| Night 1 | All 5 lanterns lit | Win, reason "all_lit" |
-| Night 2 | 6 lanterns lit | Win, reason "all_lit" |
-| Night 3 | 7 lanterns lit | Win, reason "all_lit" |
-| Drifter | Carry 5+ motes, within 15 m | Drifter enters chase state |
-| Drifter | Pulse while chasing | Drifter flees, drops motes |
-| Charm | Pickup charm | Speed boost active |
-| Wind | Night 3, active | Wind warning audio |
-| Pause | Escape/P pressed | Game paused, timers frozen |
+#### Sự kiện
 
-## File Structure
+- `dash {}`: kích hoạt lướt.
+- `charm_picked {charm_id, charm_ticks}`: nhặt bùa.
+- `drifter_steal {drifter_id, amount, carried}`: Gió Lạc trộm đom đóm.
+- `drifter_drop {drifter_id, amount}`: Gió Lạc đánh rơi đom đóm.
+- `night_start {night}`: bắt đầu đêm mới.
+- `paused {}`: tạm dừng.
+- `resumed {}`: tiếp tục.
+- `player_hit {by, flames, dropped, lost}`: người chơi bị đánh (bổ sung trường `lost`).
 
-```
+### Điểm số Phase 2 (đã bị Phase 3 thay thế)
+
+- +10 mỗi đom đóm nạp.
+- +100 mỗi đèn thắp.
+- +5 mỗi Bóng Mực bị làm choáng.
+- Thưởng thắng cũ: +2 × số giây còn lại và +50 × số Ngọn Lửa còn lại.
+
+### Test Contract lịch sử Phase 2
+
+Lệnh headless: `npm run headless -- --seed <n> --night <1-3> --ticks <tối đa 21600> --out <output.jsonl>`.
+
+| Tính năng | Scenario | Kết quả kỳ vọng |
+|---|---|---|
+| Lướt | Bấm khi không hồi chiêu | Phát sự kiện `dash` |
+| Lướt | Bấm khi đang hồi chiêu | Không phát sự kiện `dash` |
+| Đêm 1 | Cả 5 đèn được thắp | Luật cũ: thắng, lý do `all_lit` (đã bị Phase 3 thay thế) |
+| Đêm 2 | 6 đèn được thắp | Luật cũ: thắng, lý do `all_lit` (đã bị Phase 3 thay thế) |
+| Đêm 3 | 7 đèn được thắp | Luật cũ: thắng, lý do `all_lit` (đã bị Phase 3 thay thế) |
+| Gió Lạc | Mang ít nhất 5 đom đóm, cách không quá 15 m | Chuyển sang `chase` |
+| Gió Lạc | Tỏa Sáng khi đang đuổi | Chạy trốn rồi đánh rơi đom đóm |
+| Bùa Gió | Nhặt bùa | Tốc độ tăng |
+| Gió | Đêm 3, trong đợt gió | Phát cảnh báo gió |
+| Tạm dừng | Nhấn Escape/P | Tạm dừng, bộ đếm thời gian đứng yên |
+
+## Cấu trúc tệp
+
+```text
 src/
-├── game-engine.js      # Core rules (unchanged by renderers/CLI)
-├── main.js             # 3D renderer (no gameplay logic)
-└── headless-cli.js     # CLI testing (no gameplay logic)
+├── game-engine.js      # Luật gameplay thuần
+├── main.js             # Renderer 3D và giao diện
+└── headless-cli.js     # Công cụ kiểm thử headless
 ```
 
-## Color Palette
+## Bảng màu
 
-| Element | Hex |
-|---------|-----|
-| Sky night | #0E1430 |
-| Grass/sand | #2F5D50 / #C9B48A |
-| Wood | #6B4A2F |
-| Mây biển | #12384A |
-| Lantern on | #FFB347 |
-| Lantern off | #5B5F6E |
-| Mote core | #FFF6C2 |
-| Mote glow | #FFE58A |
-| Shade body | #120A1A |
-| Shade outline | #7A3CFF |
-| Shade stunned | #3A3450 |
-| Mây áo | #E8E2D0 |
-| Mây khăn | #C8102E |
-| Charm border | #F2C14E |
-| Drifter | #8FA3B8 |
-| UI danger | #FF5A5F |
-| UI text | #F5F1E6 |
+| Thành phần | Mã màu |
+|---|---|
+| Bầu trời đêm | `#0E1430` |
+| Cỏ/cát | `#2F5D50` / `#C9B48A` |
+| Gỗ | `#6B4A2F` |
+| Áo Mây | `#E8E2D0` |
+| Đèn sáng | `#FFB347` |
+| Đèn tắt | `#5B5F6E` |
+| Lõi đom đóm | `#FFF6C2` |
+| Quầng đom đóm | `#FFE58A` |
+| Thân Bóng Mực | `#120A1A` |
+| Viền Bóng Mực | `#7A3CFF` |
+| Bóng Mực bị choáng | `#3A3450` |
+| Khăn Mây | `#C8102E` |
+| Viền Bùa Gió | `#F2C14E` |
+| Gió Lạc | `#8FA3B8` |
+| Cảnh báo giao diện | `#FF5A5F` |
+| Chữ giao diện | `#F5F1E6` |
 
-## Night-Specific Config
+## Cấu hình riêng theo đêm
 
-- **Night 1**: `NIGHT_1` - single island, motes at radii 12 and 33
-- **Night 2**: `NIGHT_2` - two islands + bridge, jump pads at (20,0,18) and (50,0,-18)
-- **Night 3**: `NIGHT_3` - three levels, bell tower at center, jump pad at (0,3,13)
+- **Đêm 1:** `NIGHT_1`, một đảo, đom đóm ở bán kính 12 m và 33 m.
+- **Đêm 2:** `NIGHT_2`, hai đảo và cầu nối; bục nhảy tại `(20,0,18)` và `(50,0,-18)`.
+- **Đêm 3:** `NIGHT_3`, ba tầng và tháp chuông ở giữa; các vị trí cụ thể cần đối chiếu Ticket-02.
