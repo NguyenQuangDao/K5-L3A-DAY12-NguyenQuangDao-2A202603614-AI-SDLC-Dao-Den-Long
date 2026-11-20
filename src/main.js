@@ -1662,9 +1662,9 @@ function updateKeyHelp() {
 let state = createInitialState(renderBenchmark?.seed ?? 42, 1);
 if (demoMode) {
   applyScenario(state, {
-    player: { pos: [0, 0, 23.5], carried: 10 },
+    player: { pos: [0, 0, 23.5], carried: 13, capacity: 14 },
     motes: [],
-    shades: [{ id: "S-demo", pos: [4, 0, 23.5], state: "chase", state_ticks_left: 120 }],
+    shades: [{ id: "S-demo", pos: [3.5, 0, 23.5], state: "chase", state_ticks_left: 120 }],
     random_motes: false,
     random_shades: false,
     random_drifters: false,

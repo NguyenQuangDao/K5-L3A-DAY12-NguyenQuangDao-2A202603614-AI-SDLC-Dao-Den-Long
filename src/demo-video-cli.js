@@ -135,6 +135,7 @@ async function run() {
     page.on("pageerror", (error) => { pageError ??= error; });
 
     await page.addInitScript(() => {
+      if (!location.protocol.startsWith("http")) return;
       const sample = [
         { name: "May_Lantern", score: 1420, nights_won: 3, achieved_at: "2026-11-20T14:00:00.000Z", seed: 42 },
         { name: "Dao_SDLC", score: 1185, nights_won: 2, achieved_at: "2026-11-20T14:15:00.000Z", seed: 123 }
@@ -144,22 +145,20 @@ async function run() {
 
     // Part 1: Live 3D gameplay
     await page.goto(`http://127.0.0.1:${address.port}/?demo=1`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => document.querySelector("#carried")?.textContent === "10", null, { timeout: 15_000 });
-    await page.waitForTimeout(800);
+    await page.waitForFunction(() => document.querySelector("#carried")?.textContent === "13", null, { timeout: 15_000 });
 
-    // Light first lantern (E) -> shows warm glow creativity
+    // Light first lantern (E) immediately before shade reaches player -> shows warm glow creativity
     await page.keyboard.down("e");
     await page.waitForTimeout(250);
     await page.keyboard.up("e");
     await page.waitForFunction(() => document.querySelector("#lanterns")?.textContent === "1/5", null, { timeout: 5_000 });
-    await page.waitForTimeout(800);
 
     // Pulse (F) -> stuns and pushes nearby shade
     await page.keyboard.down("f");
     await page.waitForTimeout(250);
     await page.keyboard.up("f");
     await page.waitForFunction(() => document.querySelector("#event-indicator")?.textContent === "Tỏa Sáng", null, { timeout: 5_000 });
-    await page.waitForTimeout(700);
+    await page.waitForTimeout(1000);
     await page.screenshot({ path: screenshot });
 
     // Move, Jump, Dash
@@ -197,6 +196,7 @@ async function run() {
     await page.waitForTimeout(600);
 
     // Part 2: Verification evidence, Benchmark, Soak, Harness & Git History
+    await page.goto("about:blank");
     await page.setContent(buildEvidenceHtml(summary), { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(6500);
 

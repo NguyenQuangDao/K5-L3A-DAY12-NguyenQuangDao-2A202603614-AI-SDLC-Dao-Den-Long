@@ -24,3 +24,4 @@ description: Run the complete Đảo Đèn Lồng verification gate before claim
    node scripts/verify-ui-proof.mjs
    ```
 4. **Cấm kết thúc khi test đỏ:** Nếu bất kỳ bước nào trả về mã thoát khác 0, phải sửa lỗi tận gốc và chạy lại từ bước 1. Tuyệt đối không sửa tay file `.jsonl`/`.json` đầu ra để làm test đạt.
+

@@ -46,7 +46,7 @@ async function run() {
     });
 
     await page.goto(`http://127.0.0.1:${address.port}/?demo=1`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => document.querySelector("#carried")?.textContent === "10", null, { timeout: 15_000 });
+    await page.waitForFunction(() => document.querySelector("#carried")?.textContent === "13", null, { timeout: 15_000 });
 
     // 1. Light first lantern (E) and Pulse (F), capture gameplay screenshot with warm lantern glow
     await page.keyboard.down("e");
