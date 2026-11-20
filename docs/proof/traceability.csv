@@ -1,0 +1,9 @@
+requirement,verification,command,result,evidence
+3D island and player,unit + browser smoke,npm test; npm run dev,PASS,dist + browser validation pending
+Fixed 60 tick headless,headless scenario,npm run headless -- --seed 123 --night 1 --ticks 3600 --out docs/proof/determinism-a.jsonl,PASS,docs/proof/determinism-a.jsonl
+Mote pickup,Vitest, npm test,PASS,tests/game-engine.test.js
+Lantern deposit and lit state,Vitest,npm test,PASS,tests/game-engine.test.js
+Shade chase/pulse,Vitest,npm test,PASS,tests/game-engine.test.js
+Win/loss,Vitest,npm test,PASS,tests/game-engine.test.js
+Strict input ticks,Vitest,npm test,PASS,tests/game-engine.test.js
+Determinism,two identical headless runs,cmp,PASS,docs/proof/determinism-a.jsonl and determinism-b.jsonl

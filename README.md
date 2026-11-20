@@ -1,5 +1,53 @@
 # Day 12 — AI SDLC: Đảo Đèn Lồng
 
+## Sản phẩm
+
+Game 3D góc nhìn thứ ba, xây bằng Three.js và TypeScript/JavaScript. Người chơi điều khiển Mây, nhặt đom đóm, nạp đèn, né Bóng Mực và thắp đủ 5 Đèn Lồng Lớn.
+
+### Chạy trong tối đa 3 lệnh
+
+```bash
+npm install
+npm run dev
+```
+
+Kiểm tra và build:
+
+```bash
+npm test
+npm run build
+```
+
+### Điều khiển
+
+| Nút | Hành động |
+|---|---|
+| WASD | Di chuyển |
+| Chuột kéo | Quay camera |
+| E | Nạp đom đóm vào đèn gần Mây |
+| F | Tỏa sáng, làm choáng và đẩy Bóng Mực |
+| Nút Chơi lại | Tái bắt đầu sau thắng/thua |
+
+### Chế độ headless
+
+```bash
+npm run headless -- --seed 123 --night 1 --ticks 3600 --out out.jsonl --snapshot-every 10
+```
+
+Hỗ trợ `--scenario <file.json>` và `--inputs <file.json>`. Contract đầy đủ tại `game.contract.json`.
+
+### Cách tính điểm
+
+- 10 điểm cho mỗi đom đóm nhặt được.
+- 500 điểm cho mỗi đèn thắp.
+- 20 điểm cho mỗi lần làm choáng Bóng Mực.
+- 1 điểm cho mỗi giây còn lại.
+- 100 điểm cho mỗi flame còn lại khi thắng.
+
+### Sáng tạo của tôi
+
+Đèn sáng lan ánh cam ấm và đảo phát sáng dần theo số đèn đã thắp. Sáng tạo này không thay đổi đầu ra headless và chỉ là hiệu ứng renderer.
+
 > **Cá nhân** (1 người / 1 MSSV) · Áp dụng SDLC cùng AI để xây một **game 3D** qua **4 phase**, từ yêu cầu ban đầu tới bản phát hành.
 > **Lab board + trợ giảng:** **[Đảo Đèn Lồng Lab](https://claude.ai/artifact/Q1RYyv1dxjUczzCbd2ZnoW)**
 
